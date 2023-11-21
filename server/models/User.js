@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-    warehouse:{
+    warehouses:{
         type:String,
         required:[true,'Please provide the warehouse name'],
-        ref:'Warehouse'
+        ref:'Warehouses'
     },
     zone:{
         type:String,

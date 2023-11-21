@@ -5,14 +5,23 @@ import { sendResponse } from "../../utils/api.js";
 
 router.post('/warehouses', async (req, res) => {
   try {
-    const { name } = req.body;
-    const newWarehouse = new Warehouse({ name });
-    const savedWarehouse = await newWarehouse.save();
-    return sendResponse(res,200,'warehouse created successfully', [savedwarehouses])
+    const { warehouseNames } = req.body;
+    if (!Array.isArray(warehouseNames)) {
+      return res.status(400).json({ error: 'Invalid request format. Expected an array of warehouse names.' });
+    }
+    const createdWarehouses = [];
+    for (const name of warehouseNames) {
+      const newWarehouse = new Warehouse({ name });
+      const savedWarehouse = await newWarehouse.save();
+      createdWarehouses.push(savedWarehouse);
+    }
+    return sendResponse(res, 200, 'Warehouses created successfully', [createdWarehouses]);
   } catch (err) {
-    res.status(500).json({ error: 'Error creating a warehouse' });
+    console.error(err);
+    res.status(500).json({ error: 'Error creating warehouses' });
   }
 });
+
 
 router.get('/warehouses', async (req, res) => {
   try {

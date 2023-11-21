@@ -5,25 +5,31 @@ import Product from "../../models/Products.js";
 
 router.post('/zone/products', async (req, res) => {
   try {
-    const { name, price } = req.body;
-    const zone = await Zone.findById(req.params.zoneId);
+    const { zoneId, products } = req.body;
+    if (!zoneId) {
+      return res.status(400).json({ error: 'Zone ID is required' });
+    }
+    const zone = await Zone.findById(zoneId);
+
     if (!zone) {
       return res.status(404).json({ error: 'Zone not found' });
     }
-    const newProduct = new Product({ name, price, zone: zone._id });
-    const savedProduct = await newProduct.save();
-    res.json(savedProduct);
+    const createdProducts = [];
+    for (const { name, price } of products) {
+      const newProduct = new Product({ name, price, zone: zone._id });
+      const savedProduct = await newProduct.save();
+      createdProducts.push(savedProduct);
+    }
+    res.json(createdProducts);
   } catch (err) {
-    res.status(500).json({ error: 'Error creating a product' });
+    console.error(err);
+    res.status(500).json({ error: 'Error creating products' });
   }
 });
 
+
 router.delete('/zone/products/:productId', async (req, res) => {
   try {
-    const zone = await Zone.findById(req.params.zoneId);
-    if (!zone) {
-      return res.status(404).json({ error: 'Zone not found' });
-    }
     const product = await Product.findById(req.params.productId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -31,8 +37,10 @@ router.delete('/zone/products/:productId', async (req, res) => {
     await product.remove();
     res.json({ message: 'Product deleted successfully' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error deleting a product' });
   }
 });
+
 
 module.exports = router;
